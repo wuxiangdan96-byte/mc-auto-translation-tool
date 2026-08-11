@@ -30,8 +30,10 @@
 
 ## 捕获策略
 
-- Fabric 1.21.11 在 `DrawContext` 与 `TextRenderer` 的最终渲染入口替换显示副本，
-  并在聊天、记分板、Tab、标题、Action Bar 和 Boss Bar 渲染期间记录内容类型。
+- Fabric 26.1 在 Mojang 官方命名的 `GuiGraphicsExtractor` 与 `Font` 最终入口替换
+  显示副本，并在 `Gui`、`BossHealthOverlay` 和输入控件提取渲染状态期间记录内容类型。
+- Fabric 1.21.11 在 Yarn 命名的 `DrawContext` 与 `TextRenderer` 最终渲染入口替换
+  显示副本，并在聊天、记分板、Tab、标题、Action Bar 和 Boss Bar 渲染期间记录内容类型。
 - Forge 1.8.9/1.12.2 使用同一个 LaunchWrapper ASM 核心插件，在
   `FontRenderer` 的绘制与宽度计算入口替换字符串；聊天 HUD 另有轻量上下文，
   用于执行聊天隐私开关。

@@ -1,7 +1,23 @@
 # 构建说明
 
-项目由一个 Java 8 通用核心、一个现代 Fabric 模块和两个独立旧 Forge 构建组成。
+项目由一个 Java 8 通用核心、两个现代 Fabric 模块和两个独立旧 Forge 构建组成。
 旧 ForgeGradle 不能在现代 JDK 上直接运行，因此不能用一条根 Gradle 命令构建全部版本。
+
+## 26.1.x Fabric
+
+需要 JDK 25：
+
+```bash
+./gradlew :platform-fabric-26.1:build
+```
+
+输出位于 `platform-fabric-26.1/build/libs/`，主文件名为
+`mc-auto-translation-tool-fabric-26.1-1.1.jar`。
+
+该模块按 Minecraft 26.1 和 Fabric API `0.145.1+26.1` 的最低基线编译，
+`fabric.mod.json` 使用 `~26.1`，因此同一个 JAR 可供 26.1、26.1.1 和 26.1.2
+加载，并排除 26.2。26.1 起 Minecraft 不再混淆，构建使用 Mojang 官方命名和
+非重映射 Loom，不再声明 Yarn mappings。
 
 ## 1.21.11 Fabric
 

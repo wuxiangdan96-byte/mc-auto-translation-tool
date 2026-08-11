@@ -27,6 +27,10 @@ Action Bar、标题、Boss Bar、容器标题、物品名称与 Lore、告示牌
 [查看全部版本与更新说明](https://github.com/wuxiangdan96-byte/mc-auto-translation-tool/releases) ·
 [SHA-256 校验文件](https://github.com/wuxiangdan96-byte/mc-auto-translation-tool/releases/download/v1.1/SHA256SUMS.txt)
 
+仓库源码还包含 Fabric 26.1.x 构建目标。它以 26.1 为最低编译基线，生成的同一个
+JAR 使用 `~26.1` 版本范围，可供 26.1、26.1.1 和 26.1.2 加载；当前尚未加入
+1.1 正式版下载，请按[构建说明](docs/BUILDING.md)自行构建。
+
 ## 设计原则
 
 - 服务器无需安装模组。
@@ -38,10 +42,11 @@ Action Bar、标题、Boss Bar、容器标题、物品名称与 Lore、告示牌
 - 默认不翻译玩家名、坐标、数字、网址和格式代码。
 - 用户可以按服务器关闭私聊或其他敏感内容的外发。
 
-## 首批目标版本
+## 当前源码目标版本
 
 | Minecraft | 加载器 | Java |
 | --- | --- | --- |
+| 26.1–26.1.2 | Fabric | 25 |
 | 1.21.11 | Fabric | 21 |
 | 1.12.2 | Forge | 8 |
 | 1.8.9 | Forge | 8 |
@@ -56,6 +61,10 @@ Action Bar、标题、Boss Bar、容器标题、物品名称与 Lore、告示牌
 - Fabric 1.21.11；
 - Forge 1.12.2；
 - Forge 1.8.9。
+
+源码中的 Fabric 26.1.x 目标已通过 Java 25 干净构建、共享核心自测和三个稳定
+补丁版本的 Mixin 目标签名核对，但尚未执行实机启动与服务器内完整回归，因此不把
+它列为 1.1 正式版的已验证下载。
 
 进入游戏后按 `U` 打开设置。模组默认关闭；新安装默认选择“离线”，并使用
 “仅译文”替换方式，避免记分板和容器文字因双语拼接溢出。按 `F8` 可随时开启或
