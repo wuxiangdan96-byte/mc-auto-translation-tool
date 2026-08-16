@@ -762,6 +762,15 @@ public final class CoreSelfTest {
         assertTrue(missingDependency.contains("0xC0000135"));
         assertTrue(OfflineProcessSupport.describeStartupExit(2, "bad option")
                 .contains("bad option"));
+        assertTrue(OfflineProcessSupport.describeStartupExit(1,
+                "error: unknown argument: -fit").contains("启动参数不兼容"));
+        assertTrue(OfflineProcessSupport.describeStartupExit(
+                OfflineProcessSupport.WINDOWS_ILLEGAL_INSTRUCTION_EXIT, "")
+                .contains("CPU 不支持"));
+        assertTrue(OfflineProcessSupport.describeProcessStartFailure(
+                new java.io.IOException("Permission denied")).contains("执行权限"));
+        assertTrue(OfflineProcessSupport.describeStartupTimeout("model loading")
+                .contains("model loading"));
 
         String llamaLog = "main: loading model\n"
                 + "gguf_init_from_file_impl: failed to read magic\n"
@@ -781,7 +790,7 @@ public final class CoreSelfTest {
         assertEquals(Arrays.asList("-fit", "off", "--no-direct-io"), normal);
         java.util.List<String> conservative = new java.util.ArrayList<String>();
         OfflineProcessSupport.appendStableModelLoadingArguments(conservative, true);
-        assertTrue(conservative.contains("--no-mmap"));
+        assertEquals(Arrays.asList("--no-mmap"), conservative);
     }
 
     private static void protectsDynamicScoreboardValues() {

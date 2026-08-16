@@ -222,7 +222,12 @@ public final class LlamaCppOfflineProvider
         OfflineProcessSupport.configureLibraryPath(builder, server.getParent());
         builder.redirectErrorStream(true);
         builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log.toFile()));
-        process = builder.start();
+        try {
+            process = builder.start();
+        } catch (IOException startFailure) {
+            throw new IOException(
+                    OfflineProcessSupport.describeProcessStartFailure(startFailure), startFailure);
+        }
         registerShutdownHook();
         try {
             waitUntilHealthy(port, process, 90_000L, log, logStart);
@@ -258,7 +263,7 @@ public final class LlamaCppOfflineProvider
             }
         }
         if (!autoDownload) {
-            throw new IOException("Offline engine is not installed and automatic download is disabled");
+            throw new IOException("离线引擎未安装，且自动下载已关闭");
         }
         status = "正在下载离线引擎（约 " + Math.max(1L, asset.size / 1_000_000L) + " MB）";
         Path archive = engineRoot.resolve(asset.archiveName);
@@ -309,7 +314,7 @@ public final class LlamaCppOfflineProvider
             return model;
         }
         if (!autoDownload) {
-            throw new IOException("Offline model is not installed and automatic download is disabled");
+            throw new IOException("离线模型未安装，且自动下载已关闭");
         }
         status = "正在下载离线模型（国内源优先，约 "
                 + Math.max(1L, modelSize / 1_000_000L) + " MB）";
@@ -380,7 +385,8 @@ public final class LlamaCppOfflineProvider
             }
             Thread.sleep(250L);
         }
-        throw new IOException("Offline model did not become ready within 90 seconds", lastFailure);
+        String detail = OfflineProcessSupport.readNewLogTail(log, logStart);
+        throw new IOException(OfflineProcessSupport.describeStartupTimeout(detail), lastFailure);
     }
 
     private static int reserveLoopbackPort() throws IOException {

@@ -19,6 +19,7 @@ import java.util.Map;
 /** Platform-specific process setup and compact diagnostics for the local llama.cpp server. */
 public final class OfflineProcessSupport {
     public static final int WINDOWS_MISSING_DEPENDENCY_EXIT = 0xC0000135;
+    public static final int WINDOWS_ILLEGAL_INSTRUCTION_EXIT = 0xC000001D;
     private static final int MAX_LOG_BYTES = 16 * 1024;
     private static final int MAX_DETAIL_CHARACTERS = 240;
 
@@ -252,19 +253,23 @@ public final class OfflineProcessSupport {
     /**
      * Keep the pinned CPU server away from optional loading paths that are fragile on some
      * launcher-managed Windows installations. The model and context sizes are already explicit,
-     * so llama.cpp's automatic device-memory fitting is unnecessary. The conservative retry also
-     * avoids memory mapping for game directories backed by unusual filesystems or security tools.
+     * so llama.cpp's automatic device-memory fitting is unnecessary.
+     *
+     * <p>The compatibility retry deliberately drops the newer fitting/direct-I/O switches. This
+     * matters when an already installed engine comes from an older release or launcher cache: an
+     * unknown optional switch would otherwise be repeated on every retry and repair attempt.</p>
      */
     public static void appendStableModelLoadingArguments(
             List<String> command,
             boolean conservativeFileAccess
     ) {
+        if (conservativeFileAccess) {
+            command.add("--no-mmap");
+            return;
+        }
         command.add("-fit");
         command.add("off");
         command.add("--no-direct-io");
-        if (conservativeFileAccess) {
-            command.add("--no-mmap");
-        }
     }
 
     private static void addPath(List<String> entries, Path directory) {
@@ -446,7 +451,8 @@ public final class OfflineProcessSupport {
         return lower.contains("failed to read magic") || lower.contains("read error")
                 || lower.contains("failed to load model")
                 || lower.contains("invalid") || lower.contains("unsupported")
-                || lower.contains("unknown") || lower.contains("exception")
+                || lower.contains("unknown") || lower.contains("unrecognized option")
+                || lower.contains("exception")
                 || lower.contains("out of memory") || lower.contains("not enough memory")
                 || lower.contains("cannot allocate") || lower.contains("no cpu backend")
                 || lower.contains("failed to load cpu backend")
@@ -466,8 +472,15 @@ public final class OfflineProcessSupport {
             return "离线引擎缺少 Windows DLL 或 Visual C++ 运行库（退出码 " + code
                     + "）";
         }
+        if (exitCode == WINDOWS_ILLEGAL_INSTRUCTION_EXIT) {
+            return "离线引擎使用了当前 CPU 不支持的指令（退出码 " + code + "）";
+        }
         String detail = logDetail == null ? "" : logDetail.trim();
         String lower = detail.toLowerCase(Locale.ROOT);
+        if (lower.contains("unknown argument") || lower.contains("unknown option")
+                || lower.contains("unrecognized option") || lower.contains("invalid option")) {
+            return "离线引擎启动参数不兼容（退出码 " + code + "）：" + detail;
+        }
         if (lower.contains("out of memory") || lower.contains("not enough memory")
                 || lower.contains("cannot allocate")) {
             return "离线模型加载时内存不足（退出码 " + code + "）：" + detail;
@@ -482,6 +495,38 @@ public final class OfflineProcessSupport {
         if (!detail.isEmpty()) {
             return "离线引擎启动失败（退出码 " + code + "）：" + detail;
         }
+        if (exitCode == 9 || exitCode == 137) {
+            return "离线引擎被系统终止（退出码 " + code + "），请检查可用内存";
+        }
         return "离线引擎启动失败（退出码 " + code + "），详细信息见 llama-server.log";
+    }
+
+    public static String describeProcessStartFailure(IOException failure) {
+        String detail = failure == null || failure.getMessage() == null
+                ? "" : failure.getMessage().replace('\n', ' ').replace('\r', ' ').trim();
+        String lower = detail.toLowerCase(Locale.ROOT);
+        if (lower.contains("permission denied") || lower.contains("access is denied")
+                || lower.contains("operation not permitted")) {
+            return "离线引擎没有执行权限；请检查游戏目录权限或安全软件拦截";
+        }
+        if (lower.contains("no such file") || lower.contains("cannot find")
+                || lower.contains("not found")) {
+            return "离线引擎文件缺失；将自动重新下载安装";
+        }
+        if (detail.isEmpty()) {
+            return "无法启动离线引擎进程";
+        }
+        if (detail.length() > MAX_DETAIL_CHARACTERS) {
+            detail = detail.substring(0, MAX_DETAIL_CHARACTERS - 3) + "...";
+        }
+        return "无法启动离线引擎进程：" + detail;
+    }
+
+    public static String describeStartupTimeout(String logDetail) {
+        String detail = logDetail == null ? "" : logDetail.trim();
+        if (detail.isEmpty()) {
+            return "离线模型在 90 秒内未完成启动，详细信息见 llama-server.log";
+        }
+        return "离线模型在 90 秒内未完成启动：" + detail;
     }
 }

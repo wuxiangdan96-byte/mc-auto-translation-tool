@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "MC 自动翻译工具｜1.3.5 正式版",
+  title: "MC 自动翻译工具｜1.3.6 正式版",
   description:
-    "MC 自动翻译工具 1.3.5 正式版，修复设置页翻译服务选择弹层文字透明、无法辨认和切换的问题。",
+    "MC 自动翻译工具 1.3.6 正式版，修复离线模型启动兼容、中文故障诊断和全版本运行环境提示。",
 };
 
 const features = [
@@ -39,7 +39,7 @@ const versions = [
   ["26.1–26.2", "Fabric 单一 JAR / Forge 兼容族群", "正式版已发布", "ready"],
 ];
 
-const releaseVersion = "1.3.5";
+const releaseVersion = "1.3.6";
 const githubDownloadBase =
   `https://github.com/wuxiangdan96-byte/mc-auto-translation-tool/releases/download/v${releaseVersion}`;
 
@@ -148,7 +148,7 @@ export default function Home() {
             自动处理聊天、记分板、箱子，以及模组和整合包界面里的英文内容。
           </p>
           <div className="heroActions">
-            <a className="primaryButton" href="#download">下载 1.3.5 正式版 <span>→</span></a>
+            <a className="primaryButton" href="#download">下载 1.3.6 正式版 <span>→</span></a>
             <a className="textButton" href="#how">查看安装方法</a>
           </div>
           <div className="trustLine">
@@ -266,9 +266,9 @@ export default function Home() {
 
       <section className="downloadSection shell" id="download">
         <div className="downloadIntro">
-          <span className="sectionKicker light">1.3.5 正式版</span>
+          <span className="sectionKicker light">1.3.6 正式版</span>
           <h2>免费使用，也欢迎一起把它做得更好。</h2>
-          <p>本次提供 15 个经过校验的 JAR，覆盖 Fabric、Forge 与 NeoForge 的已验证目标；修复设置页翻译服务选择弹层文字透明、无法辨认和切换的问题，并保留关键词屏蔽、玩家名称翻译、多种在线翻译与自定义 API。请选择与你的 Minecraft 版本及加载器完全对应的文件，切勿跨加载器混用。</p>
+          <p>本次提供 15 个经过校验的 JAR，覆盖 Fabric、Forge 与 NeoForge 的已验证目标；修复离线模型启动参数兼容与中文故障诊断，并完整保留 1.3.5 的设置页防重叠、诊断显示、关键词屏蔽、玩家名称翻译、多种在线翻译及自定义 API。更新前请删除旧版，只保留与你的 Minecraft 版本及加载器完全对应的 1.3.6 文件。</p>
         </div>
         <div className="downloadGrid">
           {downloads.map((item) => (
