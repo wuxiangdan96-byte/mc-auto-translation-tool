@@ -1,0 +1,71 @@
+plugins {
+    id "java"
+    id "net.neoforged.moddev" version "${moddev_version}"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = "mc-auto-translation-tool-neoforge-${minecraft_neoforge_26_1_2_version}"
+}
+
+// NeoForge runs on Mojmap, so it reuses the Forge 26.x shared sources.
+// Only the two loader entrypoints are replaced by the NeoForge variants in this module.
+def forgeShared = rootProject.file("platforms/forge/26.x/shared")
+def forgeCommon = new File(forgeShared, "common")
+def forgeApi = new File(forgeShared, "api/26.1-26.1.2")
+
+neoForge {
+    version = project.neoforge_26_1_2_version
+
+    runs {
+        client {
+            client()
+        }
+    }
+
+    mods {
+        "universal_translator" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDir project(":translator-core").file("src/main/java")
+        java.srcDir new File(forgeCommon, "src/main/java")
+        java.srcDir new File(forgeApi, "src/main/java")
+        java.exclude "**/UniversalTranslatorForgeMod.java"
+        java.exclude "**/UniversalTranslatorForgeClient.java"
+    }
+}
+
+tasks.named("processResources", ProcessResources).configure {
+    from(new File(forgeCommon, "src/main/resources")) {
+        exclude "universal-translator.forge.mixins.json"
+    }
+    inputs.property "version", project.version
+    inputs.property "resourcePackFormat", 101
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand "version": project.version
+    }
+    filesMatching("pack.mcmeta") {
+        expand "resourcePackFormat": 101
+    }
+}
+
+tasks.named("jar", Jar).configure {
+    from(rootProject.file("LICENSE")) {
+        rename { "LICENSE_universal_translator" }
+    }
+    from(rootProject.file("docs/en/THIRD_PARTY_OFFLINE.md")) {
+        rename { "THIRD_PARTY_OFFLINE.md" }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = 25
+}
