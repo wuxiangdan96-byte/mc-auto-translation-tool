@@ -156,9 +156,11 @@ expose its key in chat, issues, or screenshots.
 
 ### Local or online LLM API
 
-Select “LLM API” in the control panel, then open “LLM API settings…”. This mode accepts the OpenAI
-`/v1/chat/completions` format and can connect to an online service or a user-run local compatible
-service such as llama.cpp or Ollama. The default endpoint is:
+Select DeepSeek, Qwen, Volcengine Ark, Zhipu, or “LLM API” in the control panel, then open
+“LLM API settings…” to enter that provider's endpoint, model, and API key in-game. The five
+providers keep independent settings, so switching providers does not overwrite another provider's
+credentials. “LLM API” accepts the OpenAI `/v1/chat/completions` format and can connect to an online
+service or a user-run local compatible service such as llama.cpp or Ollama. Its default endpoint is:
 
 ```text
 http://127.0.0.1:8080/v1/chat/completions

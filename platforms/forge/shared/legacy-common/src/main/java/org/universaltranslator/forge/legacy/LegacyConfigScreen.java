@@ -87,9 +87,9 @@ final class LegacyConfigScreen extends GuiScreen {
         this.translateEnglishOnly = config.translateEnglishOnly;
         this.translatedTextColor = config.translatedTextColor;
         this.provider = config.provider;
-        this.llmEndpoint = config.llmEndpoint;
-        this.llmApiKey = config.llmApiKey;
-        this.llmModel = config.llmModel;
+        this.llmEndpoint = config.editorEndpoint(config.provider);
+        this.llmApiKey = config.editorApiKey(config.provider);
+        this.llmModel = config.editorModel(config.provider);
     }
 
     @Override
@@ -423,7 +423,10 @@ final class LegacyConfigScreen extends GuiScreen {
         SettingsSelectionList.Layout list = SettingsSelectionList.layout(width, height, values.length);
         int selected = list.optionAt(mouseX, mouseY, values.length);
         if (selected >= 0) {
-            if (openSelection == SettingsSelectionList.Kind.PROVIDER) provider = values[selected];
+            if (openSelection == SettingsSelectionList.Kind.PROVIDER) {
+                provider = values[selected];
+                loadLlmSettings(provider);
+            }
             else if (openSelection == SettingsSelectionList.Kind.TARGET_LANGUAGE) targetLanguage = values[selected];
             else outgoingTargetLanguage = values[selected];
             openSelection = SettingsSelectionList.Kind.NONE;
@@ -463,6 +466,15 @@ final class LegacyConfigScreen extends GuiScreen {
 
     private String providerLabel() {
         return TranslationProviderCatalog.displayName(provider);
+    }
+
+    private void loadLlmSettings(String selectedProvider) {
+        if (!TranslationProviderCatalog.usesLlmEditor(selectedProvider)) {
+            return;
+        }
+        this.llmEndpoint = original.editorEndpoint(selectedProvider);
+        this.llmApiKey = original.editorApiKey(selectedProvider);
+        this.llmModel = original.editorModel(selectedProvider);
     }
 
     void applyLlmSettings(String endpoint, String model, String apiKey) {

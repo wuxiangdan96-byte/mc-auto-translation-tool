@@ -143,9 +143,11 @@ tencent-model=hunyuan-translation
 
 ### 使用本地或在线 LLM API
 
-控制面板把服务切换到“LLM API”，再点击“LLM API 设置…”。此模式兼容 OpenAI
+控制面板选择 DeepSeek、通义千问、火山方舟、智谱或“LLM API”，再点击
+“LLM API 设置…”，即可在游戏内填写该服务的端点、模型和 API Key。五种服务各自
+保存独立配置，切换服务不会覆盖其他服务的凭据。“LLM API”模式兼容 OpenAI
 `/v1/chat/completions` 格式，可以连接在线服务，也可以连接用户自行运行的
-llama.cpp、Ollama 等本地兼容服务。默认地址是：
+llama.cpp、Ollama 等本地兼容服务。它的默认地址是：
 
 ```text
 http://127.0.0.1:8080/v1/chat/completions

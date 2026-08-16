@@ -40,6 +40,7 @@ public final class ProviderSelfTest {
         reportsRefusedLocalServicesWithoutRetrying();
         createsEveryConfiguredProviderWithoutNetworkTraffic();
         cyclesTheCompleteProviderCatalog();
+        keepsLlmEditorCredentialsProviderSpecific();
         doesNotLeakVolcengineSecretsIntoHeaders();
         System.out.println("ProviderSelfTest: all checks passed");
     }
@@ -306,6 +307,30 @@ public final class ProviderSelfTest {
             count++;
         } while (!"offline".equals(provider) && count < 100);
         assertEquals(16, count);
+    }
+
+    private static void keepsLlmEditorCredentialsProviderSpecific() {
+        Properties values = new Properties();
+        OnlineProviderConfig.applyDefaults(values);
+        OnlineProviderConfig.applyLlmEditorSettings(
+                values, "deepseek", "https://deepseek.example/chat", "deepseek-secret", "deepseek-model");
+        OnlineProviderConfig.applyLlmEditorSettings(
+                values, "dashscope", "https://dashscope.example/chat", "dashscope-secret", "qwen-model");
+        OnlineProviderConfig config = OnlineProviderConfig.from(values);
+        OnlineProviderConfig.LlmEditorSettings deepseek = config.llmEditorSettings("deepseek");
+        OnlineProviderConfig.LlmEditorSettings dashscope = config.llmEditorSettings("dashscope");
+        assertEquals("https://deepseek.example/chat", deepseek.endpoint());
+        assertEquals("deepseek-secret", deepseek.apiKey());
+        assertEquals("deepseek-model", deepseek.model());
+        assertEquals("https://dashscope.example/chat", dashscope.endpoint());
+        assertEquals("dashscope-secret", dashscope.apiKey());
+        assertEquals("qwen-model", dashscope.model());
+        assertTrue(TranslationProviderCatalog.usesLlmEditor("deepseek"));
+        assertTrue(TranslationProviderCatalog.usesLlmEditor("dashscope"));
+        assertTrue(TranslationProviderCatalog.usesLlmEditor("volcengine-ark"));
+        assertTrue(TranslationProviderCatalog.usesLlmEditor("zhipu"));
+        assertTrue(TranslationProviderCatalog.usesLlmEditor("openai-compatible"));
+        assertFalse(TranslationProviderCatalog.usesLlmEditor("offline"));
     }
 
     private static void doesNotLeakVolcengineSecretsIntoHeaders() {

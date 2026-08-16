@@ -106,6 +106,14 @@ public final class VerifiedDownloader {
         if (offset > expectedSize) {
             Files.delete(partial);
             offset = 0L;
+        } else if (offset == expectedSize) {
+            if (expectedSha256.equalsIgnoreCase(sha256(partial))) {
+                progress.onProgress(expectedSize, expectedSize);
+                moveVerifiedPartial(partial, destination);
+                return destination;
+            }
+            Files.delete(partial);
+            offset = 0L;
         }
 
         HttpURLConnection connection = open(source, offset, 0);
@@ -155,13 +163,17 @@ public final class VerifiedDownloader {
             throw new IOException("Downloaded file failed SHA-256 verification");
         }
         progress.onProgress(expectedSize, expectedSize);
+        moveVerifiedPartial(partial, destination);
+        return destination;
+    }
+
+    private static void moveVerifiedPartial(Path partial, Path destination) throws IOException {
         try {
             Files.move(partial, destination,
                     StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException atomicMoveUnsupported) {
             Files.move(partial, destination, StandardCopyOption.REPLACE_EXISTING);
         }
-        return destination;
     }
 
     private static void validateResponse(

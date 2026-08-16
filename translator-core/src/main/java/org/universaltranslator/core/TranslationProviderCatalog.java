@@ -59,6 +59,10 @@ public final class TranslationProviderCatalog {
     }
 
     public static boolean usesLlmEditor(String provider) {
-        return "openai-compatible".equalsIgnoreCase(provider);
+        return "deepseek".equalsIgnoreCase(provider)
+                || "dashscope".equalsIgnoreCase(provider)
+                || "volcengine-ark".equalsIgnoreCase(provider)
+                || "zhipu".equalsIgnoreCase(provider)
+                || "openai-compatible".equalsIgnoreCase(provider);
     }
 }

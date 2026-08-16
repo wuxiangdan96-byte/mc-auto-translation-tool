@@ -75,6 +75,7 @@ public final class CoreSelfTest {
         fallsBackFromOfflineToApi();
         verifiesDownloadedFileHashes();
         reportsVerifiedDownloadProgress();
+        promotesCompleteVerifiedPartialDownloads();
         extractsOfflineEngineArchivesSafely();
         normalizesOfflineModelSelections();
         supportsTraditionalChineseTargets();
@@ -266,6 +267,22 @@ public final class CoreSelfTest {
                 });
         assertEquals((long) bytes.length, downloaded.get());
         assertEquals((long) bytes.length, total.get());
+    }
+
+    private static void promotesCompleteVerifiedPartialDownloads() throws Exception {
+        Path directory = Files.createTempDirectory("universal-translator-complete-partial-");
+        Path destination = directory.resolve("model.gguf");
+        Path partial = directory.resolve("model.gguf.part");
+        byte[] bytes = "complete-model".getBytes(StandardCharsets.UTF_8);
+        Files.write(partial, bytes);
+        VerifiedDownloader.download(
+                Arrays.asList(URI.create("https://example.invalid/model")),
+                destination,
+                bytes.length,
+                VerifiedDownloader.sha256(partial));
+        assertTrue(Files.isRegularFile(destination));
+        assertFalse(Files.exists(partial));
+        assertEquals("complete-model", new String(Files.readAllBytes(destination), StandardCharsets.UTF_8));
     }
 
     private static void extractsOfflineEngineArchivesSafely() throws Exception {

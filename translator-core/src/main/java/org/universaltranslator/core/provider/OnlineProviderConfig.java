@@ -35,6 +35,31 @@ public final class OnlineProviderConfig {
 
     private final Properties values;
 
+    /** Three fields shared by OpenAI-compatible provider configuration screens. */
+    public static final class LlmEditorSettings {
+        private final String endpoint;
+        private final String apiKey;
+        private final String model;
+
+        private LlmEditorSettings(String endpoint, String apiKey, String model) {
+            this.endpoint = endpoint;
+            this.apiKey = apiKey;
+            this.model = model;
+        }
+
+        public String endpoint() {
+            return endpoint;
+        }
+
+        public String apiKey() {
+            return apiKey;
+        }
+
+        public String model() {
+            return model;
+        }
+    }
+
     private OnlineProviderConfig(Properties values) {
         this.values = values;
     }
@@ -133,6 +158,29 @@ public final class OnlineProviderConfig {
                 target.setProperty(key, values.getProperty(key, ""));
             }
         }
+    }
+
+    /** Returns the independently stored editor values for the selected LLM provider. */
+    public LlmEditorSettings llmEditorSettings(String provider) {
+        String[] keys = llmEditorKeys(provider);
+        return new LlmEditorSettings(value(keys[0]), value(keys[1]), value(keys[2]));
+    }
+
+    /** Writes only the selected provider's LLM editor values, preserving every other credential. */
+    public static void applyLlmEditorSettings(
+            Properties target,
+            String provider,
+            String endpoint,
+            String apiKey,
+            String model
+    ) {
+        if (target == null) {
+            throw new IllegalArgumentException("Target properties are required");
+        }
+        String[] keys = llmEditorKeys(provider);
+        target.setProperty(keys[0], clean(endpoint));
+        target.setProperty(keys[1], clean(apiKey));
+        target.setProperty(keys[2], clean(model));
     }
 
     public TranslationProvider create(String provider) {
@@ -247,5 +295,27 @@ public final class OnlineProviderConfig {
         if (!properties.containsKey(key)) {
             properties.setProperty(key, value);
         }
+    }
+
+    private static String[] llmEditorKeys(String provider) {
+        String selected = provider == null ? "" : provider.trim().toLowerCase(java.util.Locale.ROOT);
+        if ("deepseek".equals(selected)) {
+            return new String[]{"deepseek-endpoint", "deepseek-api-key", "deepseek-model"};
+        }
+        if ("dashscope".equals(selected)) {
+            return new String[]{"dashscope-endpoint", "dashscope-api-key", "dashscope-model"};
+        }
+        if ("volcengine-ark".equals(selected)) {
+            return new String[]{"volcengine-ark-endpoint", "volcengine-ark-api-key", "volcengine-ark-model"};
+        }
+        if ("zhipu".equals(selected)) {
+            return new String[]{"zhipu-endpoint", "zhipu-api-key", "zhipu-model"};
+        }
+        // Keep the historical generic values available while offline or another provider is selected.
+        return new String[]{"llm-api-endpoint", "llm-api-key", "llm-api-model"};
+    }
+
+    private static String clean(String value) {
+        return value == null ? "" : value.trim();
     }
 }

@@ -177,9 +177,8 @@ final class ForgeConfig {
         properties.setProperty("translated-text-color", translatedTextColor.configName());
         properties.setProperty("provider", provider.trim());
         properties.setProperty("libretranslate-endpoint", endpoint.trim());
-        properties.setProperty("llm-api-endpoint", llmEndpoint.trim());
-        properties.setProperty("llm-api-key", llmApiKey.trim());
-        properties.setProperty("llm-api-model", llmModel.trim());
+        OnlineProviderConfig.applyLlmEditorSettings(
+                properties, provider, llmEndpoint, llmApiKey, llmModel);
         properties.setProperty("offline-auto-download", Boolean.toString(offlineAutoDownload));
         properties.setProperty("offline-model",
                 (offlineModel == null ? OfflineModel.LITE : offlineModel).configName());
@@ -240,6 +239,18 @@ final class ForgeConfig {
         if (candidate instanceof AutoCloseable) {
             ((AutoCloseable) candidate).close();
         }
+    }
+
+    String editorEndpoint(String selectedProvider) {
+        return onlineProviderConfig.llmEditorSettings(selectedProvider).endpoint();
+    }
+
+    String editorApiKey(String selectedProvider) {
+        return onlineProviderConfig.llmEditorSettings(selectedProvider).apiKey();
+    }
+
+    String editorModel(String selectedProvider) {
+        return onlineProviderConfig.llmEditorSettings(selectedProvider).model();
     }
 
     boolean allows(TextKind kind) {
