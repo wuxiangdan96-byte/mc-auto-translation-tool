@@ -282,9 +282,9 @@ Forge／NeoForge 1.20.1 保留为分别验证的加载器专用 JAR。不同 API
 
 ```bash
 python3 scripts/prepare_release_assets.py \
-  --release-dir downloads/1.3.6 \
+  --release-dir downloads/1.3.7 \
   --output-dir build/release-assets \
-  --version 1.3.6
+  --version 1.3.7
 ```
 
 ## 核心自测
