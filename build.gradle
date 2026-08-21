@@ -267,6 +267,37 @@ tasks.register("validateOpaqueDiagnosticsTextColors") {
     }
 }
 
+tasks.register("validateOutgoingTranslationReentryGuards") {
+    group = "verification"
+    description = "Prevents translated Forge and NeoForge chat messages from being intercepted again."
+
+    doLast {
+        def outgoingClients = fileTree("platforms") {
+            include "**/UniversalTranslatorForgeClient.java"
+            include "**/UniversalTranslatorNeoForgeClient.java"
+        }.files.findAll { source ->
+            def text = source.getText("UTF-8")
+            text.contains("shouldTranslateOutgoing(message)") &&
+                    text.contains("sendCompletedMessage(")
+        }
+        def violations = outgoingClients.findAll { source ->
+            def text = source.getText("UTF-8")
+            !text.contains("private static boolean resendingTranslatedMessage;") ||
+                    !text.contains("if (resendingTranslatedMessage\n") ||
+                    !text.contains("resendingTranslatedMessage = true;") ||
+                    !text.contains("} finally {") ||
+                    !text.contains("resendingTranslatedMessage = false;")
+        }
+
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                    "Outgoing translation resend paths must bypass their own chat event:\n" +
+                            violations.collect { relativePath(it) }.sort().join("\n")
+            )
+        }
+    }
+}
+
 def releaseDirectory = file("downloads/${project.mod_version}")
 def releaseArtifacts = fileTree(releaseDirectory) {
     include "*.jar", "*.jar.part-*"
@@ -358,6 +389,7 @@ tasks.named("check") {
     dependsOn(
             "validateMixinConfigs",
             "validateNonOverlappingSettingsLabels",
+            "validateOutgoingTranslationReentryGuards",
             "validateOpaqueDiagnosticsTextColors",
             "validateOpaqueSelectionTextColors",
             "validateSharedPlatformLayouts",

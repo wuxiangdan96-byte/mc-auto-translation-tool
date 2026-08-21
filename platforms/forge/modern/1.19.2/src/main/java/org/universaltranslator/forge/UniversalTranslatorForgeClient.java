@@ -29,6 +29,7 @@ public final class UniversalTranslatorForgeClient {
             "key.categories.misc");
     private static boolean connectedLastTick;
     private static int joinHintTicks = -1;
+    private static boolean resendingTranslatedMessage;
 
     private UniversalTranslatorForgeClient() {
     }
@@ -101,7 +102,8 @@ public final class UniversalTranslatorForgeClient {
         @SubscribeEvent
         public static void outgoingChat(ClientChatEvent event) {
             String message = event.getMessage();
-            if (!ForgeTranslationRuntime.shouldTranslateOutgoing(message)) {
+            if (resendingTranslatedMessage
+                || !ForgeTranslationRuntime.shouldTranslateOutgoing(message)) {
                 ForgeTranslationRuntime.protectOutgoingMessage(message);
                 return;
             }
@@ -171,7 +173,12 @@ public final class UniversalTranslatorForgeClient {
         }
         ForgeTranslationRuntime.protectOutgoingMessage(outgoing);
         if (client.player != null) {
-            client.player.chatSigned(outgoing, null);
+            resendingTranslatedMessage = true;
+            try {
+                client.player.chatSigned(outgoing, null);
+            } finally {
+                resendingTranslatedMessage = false;
+            }
         }
         if (failed) {
             client.gui.getChat().addMessage(
